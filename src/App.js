@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
@@ -31,9 +32,8 @@ function App() {
   const isManager = currentUser?.role === ROLE.MANAGER;
   const isCustomer = currentUser?.role === ROLE.CUSTOMER;
 
-  useEffect(() => {
-    loadItems();
-  }, []);
+
+
 
   useEffect(() => {
     if (view === 'orders') {
@@ -61,18 +61,22 @@ function App() {
     }
   }, [view, isManager, isCustomer]);
 
-  const loadItems = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/items`);
-      const data = await res.json();
-      setFoodItems(data);
-      if (!selectedItem && data.length > 0) {
-        setSelectedItem(data[0].name);
-      }
-    } catch (error) {
-      console.error('Failed to fetch food items', error);
+const loadItems = useCallback(async () => {
+  try {
+    const res = await fetch(`${API_BASE}/items`);
+    const data = await res.json();
+    setFoodItems(data);
+    if (!selectedItem && data.length > 0) {
+      setSelectedItem(data[0].name);
     }
-  };
+  } catch (error) {
+    console.error('Failed to fetch food items', error);
+  }
+}, [selectedItem]);
+ 
+ useEffect(() => {
+  loadItems();
+}, [loadItems]);
 
   const loadOrders = async () => {
     try {
